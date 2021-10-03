@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record model="ir.ui.view" id="orders_form_view">
+        <field name="name">orders.form</field>
+        <field name="model">orders</field>
+        <field name="arch" type="xml">
+            <form string="Orders Form">
+                <header>
+                    <button name="action_review" type="object" string="Review"
+                            attrs="{'invisible': [('state', 'not in', ['review'])]}"/>
+                    <button name="action_review" class="btn-primary" type="object" string="Review"
+                            attrs="{'invisible': [('state', 'not in', ['draft'])]}"/>
+                    <button name="action_in_stock" type="object" string="In Stock"
+                            attrs="{'invisible': [('state', 'not in', ['draft'])]}"/>
+                    <button name="action_in_stock" class="btn-primary" type="object" string="In Stock"
+                            attrs="{'invisible': [('state', 'not in', ['review'])]}"/>
+                    <button name="action_confirm" type="object" string="Confirm"
+                            attrs="{'invisible': [('state', 'not in', ['draft','review'])]}"/>
+                    <button name="action_confirm" class="btn-primary" type="object" string="Confirm"
+                            attrs="{'invisible': [('state', 'not in', ['in_stock'])]}"/>
+                    <button name="action_pending" type="object" string="Pending"
+                            attrs="{'invisible': [('state', 'not in', ['draft','review'])]}"/>
+                    <button name="action_pending" class="btn-primary" type="object" string="Pending"
+                            attrs="{'invisible': [('state', 'not in', ['in_stock'])]}"/>
+                    <button name="action_new_date" class="btn-primary"
+                             attrs="{'invisible': [('state', 'not in', ['pending','not_found','return'])]}" type="object" string="New Date"/>
+                    <button name="action_with_captain" class="btn-primary" type="object" string="With Captain"
+                            attrs="{'invisible': [('state', 'not in', ['confirm'])]}"/>
+                    <button name="action_delivered" class="btn-primary" type="object" string="Delivered"
+                            attrs="{'invisible': [('state', 'not in', ['with_captain'])]}"/>
+                    <button name="action_not_found" class="btn-primary" type="object" string="Not Found"
+                            attrs="{'invisible': [('state', 'not in', ['with_captain'])]}"/>
+                    <button name="action_return" class="btn-primary" type="object" string="Return"
+                            attrs="{'invisible': [('state', 'not in', ['with_captain'])]}"/>
+                    <button name="action_back" states="return" type="object" string="In Stock"/>
+                    <button name="action_recived_money" class="btn-primary" type="object" string="Recived Money"
+                            attrs="{'invisible': [('state', 'not in', ['delivered'])]}"/>
+                    <button name="action_invoiced" class="btn-primary" type="object" string="Invoiced"
+                            attrs="{'invisible': [('state', 'not in', ['recived_money'])]}"/>
+                    <button name="action_cancel" states="draft,review,in_stock,confirm,pending" type="object"
+                            string="Cancel"/>
+                    <button name="action_draft" states="cancel" type="object" string="Set to New"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,review,in_stock,confirm,delivered,Pending,with_captain,delivered,not_found,return,recived_money,invoiced"/>
+                </header>
+                <sheet>
+                     <h1>
+                         <label for="name" attrs="{'invisible':[('name','=', False)]}" class="oe_inline" string="Waybill - " style="font-size:30px;"/>
+                        <field class="oe_inline" name="sequence" readonly="1"/>
+                    </h1>
+                    <group col="4" >
+                        <field attrs="{'readonly':[('state','in',('with_captain', 'recived_money'))]}" name="date_order"/>
+                        <field name="name"/>
+                        <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" groups="base.group_multi_currency" name="currency_id"/>
+                        <separator colspan="4" string="·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·" style="text-align: center;"/>
+                        <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" colspan="4" domain="[('is_company', '=', True)]" name="partner_id" widget="res_partner_many2one" context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'default_is_company': True, 'show_vat': True}"/>
+                        </group>
+                    <group>
+                        <group string=" From Shipper">
+                        <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" context="{'search_default_customer':1, 'show_address': 1}" domain="[('parent_id','=',partner_id)]" name="partner_order_id" options="{&quot;always_reload&quot;: True}"/>
+                        <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" context="{'search_default_customer':1, 'show_address': 1}" domain="[('parent_id','=',partner_id)]" name="partner_invoice_id" options="{&quot;always_reload&quot;: True}"/>
+                        <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" context="{'search_default_customer':1, 'show_phone': 1}" domain="[('parent_id','=',partner_id)]" name="sender_phone" options="{&quot;always_reload&quot;: True}"/>
+                        </group>
+                    <group string=" From Recevier">
+                    <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" context="{'search_default_customer':1, 'show_address': 1}" name="departure_address_id" options="{&quot;always_reload&quot;: True}"/>
+                        <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" context="{'search_default_customer':1, 'show_address': 1}" name="arrival_address_id" options="{&quot;always_reload&quot;: True}"/>
+                        <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" context="{'search_default_customer':1, 'show_phone': 1}" domain="[('parent_id','=',partner_id)]" name="Recevier_phone" options="{&quot;always_reload&quot;: True}"/>
+
+                        </group>
+                    <group>
+                        <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" name="upload_point"/>
+                        <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" name="download_point"/>
+                         <field name="employee_id" string="captain"/>
+                        </group>
+                    </group>
+                    <notebook>
+                     <page string="Notes">
+                            <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" colspan="4" name="notes" nolabel="1" placeholder="Notes..."/>
+                        </page>
+                        <page string="Log">
+                            <group col="4" colspan="4">
+                                <group colspan="2">
+                                    <separator colspan="2" string="Client Invoice Data"/>
+                                    <field name="responsible_id"/>
+                                    <newline/>
+                                </group>
+                                <group colspan="2">
+                                    <separator colspan="2" string="Supplier Invoice Data"/>
+                                    <field name="description"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Factor Driver">
+                            <separator colspan="4" string="Driver Salary Factors"/>
+                      <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" colspan="4" context="{'default_category': 'driver'}" name="driver_factor_ids" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+               <div class="oe_chatter">
+              <field name="message_follower_ids" widget="mail_followers"/>
+              <field name="activity_ids" widget="mail_activity"/>
+              <field name="message_ids" widget="mail_thread"/>
+            </div>
+            </form>
+        </field>
+    </record>
+    <!-- tree view-->
+    <record model="ir.ui.view" id="orders_tree_view">
+        <field name="name">orders.tree</field>
+        <field name="model">orders</field>
+        <field name="arch" type="xml">
+            <tree string="Orders Tree">
+                <field name="name"/>
+                <field invisible="1" name="responsible_id"/>
+                <field name="description"/>
+                <field name="date_order"/>
+            </tree>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="orders_search_view">
+        <field name="name">orders.search</field>
+        <field name="model">orders</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="description"/>
+                <field name="responsible_id"/>
+                <filter name="my_orders" string="My orders"
+                        domain="[('responsible_id', '=', uid)]"/>
+                <group string="Group By">
+                    <filter name="by_responsible" string="Responsible"
+                            context="{'group_by': 'responsible_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    <!-- window action -->
+    <!--
+        The following tag is an action definition for a "window action",
+        that is an action opening a view or a set of views
+    -->
+    <record model="ir.actions.act_window" id="orders_list_action">
+        <field name="name">Orders</field>
+        <field name="res_model">orders</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">Create the first order
+            </p>
+        </field>
+        <field name="context" eval="{'search_default_my_orders': 1}"/>
+    </record>
+    <menuitem action="orders_list_action" id="menu_orders" parent="main_operations_menu" sequence="1" name="Orders"/>
+</odoo>
