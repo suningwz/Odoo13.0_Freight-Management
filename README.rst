@@ -82,7 +82,7 @@ Contributors
 * Luis Miguel Guzmán <miguel.ruiz@jarsa.com.mx>
 * Isabel Ávila <isabel.esparza@jarsa.com.mx>
 * Erick Reza <alexis.reza.s@gmail.com>
-* Mohamed Abu Emira < mohamed.abuemira@gmail.com>
+
 Maintainer
 ----------
 
