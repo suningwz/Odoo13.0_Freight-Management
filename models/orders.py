@@ -1,4 +1,3 @@
-
 from __future__ import division
 
 import logging
@@ -11,61 +10,62 @@ try:
 except ImportError:
     _logger.debug('Cannot `import num2words`.')
 
+
 class orders(models.Model):
     _name = 'orders'
     _description = 'Ordes'
-    _inherit = ['mail.thread', 'mail.activity.mixin','ir.sequence']
-    _order = "id desc"
-    name= fields.Char(string="Waybill Number ")
-    sequence=fields.Char()
+    _inherit = ['portal.mixin', 'mail.thread', 'mail.activity.mixin', 'utm.mixin']
+    _order = 'date_order desc, id desc'
+    order_sequence = fields.Char(string='waybill Number', required=True, copy=False, readonly=True, index=True,
+                                 default=lambda self: _('New'))
+    name = fields.Char(string="Reference ")
     description = fields.Text(string="Description")
     date_order = fields.Datetime(
         'Date', required=True,
         default=fields.Datetime.now)
     employee_id = fields.Many2one(
-        'hr.employee', 'Driver', required=True ,
+        'hr.employee', 'Driver', required=True,
         domain=[('driver', '=', True)])
+    account_manger = fields.Many2one(
+        'hr.employee', 'Account Manager', required=True,
+        domain=[('account_manger', '=', True)])
     driver_factor_ids = fields.One2many(
         'tms.factor', 'waybill_id',
         string='Travel Driver Payment Factors',
         domain=[('category', '=', 'driver'), ])
     notes = fields.Html()
     partner_id = fields.Many2one(
-        'res.partner', required=True, change_default=True ,string="Customer",
-        domain = [('customer', '=', True)])
+        'res.partner', 'customer', required=True,
+        domain=[('customer', '=', True)])
     currency_id = fields.Many2one(
         'res.currency', required=True,
         default=lambda self: self.env.user.company_id.currency_id)
     company_id = fields.Many2one(
         'res.company', required=True,
         default=lambda self: self.env.user.company_id)
-    partner_invoice_id = fields.Many2one(
-        'res.partner', 'Invoice Address', required=True,
-        help="Invoice address for current Waybill.")
     partner_order_id = fields.Many2one(
-        'res.partner', 'Ordering Contact', required=True,
+        'res.partner', 'Shipper', required=True,
         help="The name and address of the contact who requested the "
              "order or quotation.")
-    sender_phone = fields.Many2one(
-        'res.partner', 'Phone', required=True,
-        help="The name and address of the contact who requested the "
-             "order or quotation.")
-    Recevier_phone = fields.Many2one(
-        'res.partner', 'Phone', required=True,
-        help="The name and Recevier of the contact who requested the "
-             "order or quotation.")
-    departure_address_id = fields.Many2one(
-        'res.partner', required=True,
+    sender_phone = fields.Char("Phone", required=True, change_default=True, readonly=True, copy=True)
+    recevier_name = fields.Many2one(
+        'res.partner', 'Recevier', required=True,
         help="Departure address for current Waybill.", change_default=True)
-    arrival_address_id = fields.Many2one(
-        'res.partner', required=True,
-        help="Arrival address for current Waybill.", change_default=True)
+    recevier_phone = fields.Char(string="Phone", required=True, readonly=True, copy=True)
     upload_point = fields.Char(change_default=True)
     download_point = fields.Char(change_default=True)
     history = fields.Text()
     responsible_id = fields.Many2one('res.users',
-                                     ondelete='set null', string="Salesman", index=True)
-
+                                     ondelete='set null', string="Data Entry", index=True,
+                                     default=lambda self: self.env.user)
+    def _get_default_require_signature(self):
+        return self.env.company.portal_confirmation_sign
+    signature = fields.Image('Signature', help='Signature received through the portal.', copy=False, attachment=True,
+                             max_width=1024, max_height=1024)
+    signed_by = fields.Char('Signed By', help='Name of the person that signed the SO.', copy=False)
+    signed_on = fields.Datetime('Signed On', help='Date of the signature.', copy=False)
+    require_signature = fields.Boolean('Online Signature', default=_get_default_require_signature, readonly=True,
+                                       states={'draft': [('readonly', False)], 'sent': [('readonly', False)]})
     state = fields.Selection([
         ('draft', 'Draft'),
         ('review', 'Review'),
@@ -77,39 +77,43 @@ class orders(models.Model):
         ('not_found', ' Not Found '),
         ('return', ' Return '),
         ('recived_money', 'Recived Money '),
-        ('invoiced', ' Invoiced '),
-        ('cancel', 'Cancel'),
-    ], string='Order Status', readonly=True, copy=False, default='draft')
-
+        ('invoiced', 'Invoiced'),
+        ('sent', 'Sent'),
+        ('cancel', 'Cancel'), ],
+        string='Order Status', readonly=True, copy=False, default='draft')
     @api.model
-    def create(self, values):
-        waybill = super(orders, self).create(values)
-        waybill.sequence = waybill.next_by_id()
-        return waybill
-    def write(self, values):
-        for rec in self:
-            if 'partner_id' in values:
-                for travel in rec.travel_ids:
-                    travel.partner_ids = False
-                    travel._compute_partner_ids()
-            res = super(orders, self).write(values)
-            return res
-    @api.onchange('partner_id')
-    def onchange_partner_id(self):
-        if self.sender_phone:
-            self.partner_phone = self.partner_id.sender_phone.id
+    def create(self, vals):
+        if vals.get('order_sequence', _('New')) == _('New'):
+            vals['order_sequence'] = self.env['ir.sequence'].next_by_code('order.freights.sequence') or _('New')
+            result = super(orders, self).create(vals)
+            return result
+
+    def has_to_be_signed(self, include_draft=False):
+        return (self.state == 'sent' or (
+                    self.state == 'draft' and include_draft)) and not self.is_expired and self.require_signature and not self.signature
+
+
+
+    @api.onchange('partner_order_id')
+    def onchange_partner_order_id(self):
+        self.sender_phone = self.partner_order_id.phone
+
+    @api.onchange('recevier_name')
+    def onchange_recevier_name(self):
+        self.recevier_phone = self.recevier_name.phone
+
     @api.onchange('partner_id')
     def onchange_partner_id(self):
         if self.partner_id:
             self.partner_order_id = self.partner_id.address_get(
                 ['invoice', 'contact']).get('contact', False)
-            self.partner_invoice_id = self.partner_id.address_get(
-                ['invoice', 'contact']).get('invoice', False)
+
     def action_review(self):
         order_dreft = self.filtered(lambda s: s.state in ['draft'])
         return order_dreft.write({
             'state': 'review',
         })
+
     def action_in_stock(self):
         in_stock = self.filtered(lambda s: s.state in ['review'])
         return in_stock.write({

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="send_email_wizard" model="ir.ui.view">
+        <field name="name">Send Email</field>
+        <field name="model">send.email.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Send  Email">
+                <separator colspan="4" string="Send Email to  Signature from Recevier ?"/>
+                <footer>
+                  <button name="action_quotation_send" string="Send by Email" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    <act_window
+        id="action_send_wizard_email"
+        name="Send Email Order"
+        res_model="send.email.wizard"
+        binding_model="orders"
+        target="new"
+        view_mode="form"/>
+</odoo>

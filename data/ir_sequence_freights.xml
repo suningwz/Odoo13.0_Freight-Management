@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="seq_order" model="ir.sequence">
+            <field name="name">Order Sequence</field>
+            <field name="code">order.freights.sequence</field>
+            <field name="prefix">O-</field>
+            <field name="padding">8</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

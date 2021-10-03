@@ -18,9 +18,8 @@ except ImportError:
 class TmsWaybill(models.Model):
     _name = 'tms.waybill'
     _inherit = 'mail.thread'
-    _order = 'name desc'
     _description = 'Waybills'
-
+    _order = 'name desc'
 
     operating_unit_id = fields.Many2one(
         'operating.unit', required=True)
@@ -211,6 +210,7 @@ class TmsWaybill(models.Model):
                     travel._compute_partner_ids()
             res = super(TmsWaybill, self).write(values)
             return res
+
     @api.onchange('partner_id')
     def onchange_partner_id(self):
         if self.partner_id:
@@ -218,6 +218,7 @@ class TmsWaybill(models.Model):
                 ['invoice', 'contact']).get('contact', False)
             self.partner_invoice_id = self.partner_id.address_get(
                 ['invoice', 'contact']).get('invoice', False)
+
     def action_approve(self):
         for waybill in self:
             waybill.state = 'approved'

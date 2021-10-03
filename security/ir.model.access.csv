@@ -1,6 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_fleet_vehicle_log_fuel_prepaid,access_fleet_vehicle_log_fuel_prepaid,model_fleet_vehicle_log_fuel_prepaid,,1,0,0,0
 access_orders,orders,model_orders,base.group_user,1,1,1,1
+access_send_email_wizard,send_email_wizard,model_send_email_wizard,base.group_user,1,1,1,1
 monitoring_tms_waybill,access_tms_waybill,model_tms_waybill,group_monitoring,1,0,0,0
 monitoring_tms_travel,access_tms_travel,model_tms_travel,group_monitoring,1,0,0,0
 monitoring_tms_advance,access_tms_advance,model_tms_advance,group_monitoring,1,0,0,0

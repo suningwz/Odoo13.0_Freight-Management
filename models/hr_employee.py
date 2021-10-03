@@ -17,7 +17,8 @@ except ImportError:
 
 class HrEmployee(models.Model):
     _inherit = 'hr.employee'
-
+    account_manger = fields.Boolean(string="Account Manager",
+        help='Used to define if this person will be used as a Driver')
     driver = fields.Boolean(
         help='Used to define if this person will be used as a Driver')
     tms_advance_account_id = fields.Many2one(

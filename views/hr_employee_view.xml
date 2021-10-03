@@ -9,6 +9,7 @@
                 <page string="TMS">
                     <group>
                         <field name="operating_unit_id"/>
+                        <field name="account_manger"/>
                         <field name="driver"/>
                         <field name="outsourcing" attrs="{'invisible':[('driver','=',False)]}"/>
                     </group>

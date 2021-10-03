@@ -44,27 +44,27 @@
                 </header>
                 <sheet>
                      <h1>
-                         <label for="name" attrs="{'invisible':[('name','=', False)]}" class="oe_inline" string="Waybill - " style="font-size:30px;"/>
-                        <field class="oe_inline" name="sequence" readonly="1"/>
+                         <div>
+                             <field name="order_sequence" readonly="1"/>
+                        </div>
                     </h1>
                     <group col="4" >
                         <field attrs="{'readonly':[('state','in',('with_captain', 'recived_money'))]}" name="date_order"/>
                         <field name="name"/>
                         <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" groups="base.group_multi_currency" name="currency_id"/>
-                        <separator colspan="4" string="·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·  ·" style="text-align: center;"/>
-                        <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" colspan="4" domain="[('is_company', '=', True)]" name="partner_id" widget="res_partner_many2one" context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'default_is_company': True, 'show_vat': True}"/>
+                        <separator colspan="4" string="·  ·   ·  Waybill  ·  ·  ·" style="text-align: center;"/>
+                        <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}"  colspan="4" domain="[('customer','=',True), ('is_company', '=', True)]" name="partner_id" widget="res_partner_many2one" context="{'res_partner_search_mode': 'customer', 'show_address': 1, 'default_is_company': True, 'show_vat': True}"/>
                         </group>
                     <group>
                         <group string=" From Shipper">
-                        <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" context="{'search_default_customer':1, 'show_address': 1}" domain="[('parent_id','=',partner_id)]" name="partner_order_id" options="{&quot;always_reload&quot;: True}"/>
-                        <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" context="{'search_default_customer':1, 'show_address': 1}" domain="[('parent_id','=',partner_id)]" name="partner_invoice_id" options="{&quot;always_reload&quot;: True}"/>
-                        <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" context="{'search_default_customer':1, 'show_phone': 1}" domain="[('parent_id','=',partner_id)]" name="sender_phone" options="{&quot;always_reload&quot;: True}"/>
+                        <field  context="{'search_default_customer':1, 'show_address': 1}" domain="[('parent_id','=',partner_id)]" name="partner_order_id" options="{&quot;always_reload&quot;: True}"/>
+                        <field  readonly="0" name="sender_phone"  />
+                         <field name="account_manger" />
                         </group>
                     <group string=" From Recevier">
-                    <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" context="{'search_default_customer':1, 'show_address': 1}" name="departure_address_id" options="{&quot;always_reload&quot;: True}"/>
-                        <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" context="{'search_default_customer':1, 'show_address': 1}" name="arrival_address_id" options="{&quot;always_reload&quot;: True}"/>
-                        <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" context="{'search_default_customer':1, 'show_phone': 1}" domain="[('parent_id','=',partner_id)]" name="Recevier_phone" options="{&quot;always_reload&quot;: True}"/>
-
+                        <field  context="{'search_default_customer':1, 'show_address': 1}" domain="[('parent_id','!=',partner_id),('recevier','=',True),('type', '=', 'contact')]" name="recevier_name" options="{&quot;always_reload&quot;: True}"/>
+                        <field  readonly="0" name="recevier_phone"  />
+                        <field name="responsible_id"/>
                         </group>
                     <group>
                         <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" name="upload_point"/>
@@ -80,7 +80,6 @@
                             <group col="4" colspan="4">
                                 <group colspan="2">
                                     <separator colspan="2" string="Client Invoice Data"/>
-                                    <field name="responsible_id"/>
                                     <newline/>
                                 </group>
                                 <group colspan="2">
@@ -89,9 +88,13 @@
                                 </group>
                             </group>
                         </page>
-                        <page string="Factor Driver">
-                            <separator colspan="4" string="Driver Salary Factors"/>
-                      <field attrs="{'readonly':[('state','in',('confirmed', 'cancel'))]}" colspan="4" context="{'default_category': 'driver'}" name="driver_factor_ids" nolabel="1"/>
+                       <page  groups="base.group_no_one" string="Customer Signature" name="customer_signature" attrs="{'invisible': [('require_signature', '=', False), ('signed_by', '=', False), ('signature', '=', False), ('signed_on', '=', False)]}">
+                            <group>
+                                <field name="require_signature"/>
+                                <field name="signed_by"/>
+                                <field name="signed_on"/>
+                                <field name="signature" widget="image"/>
+                            </group>
                         </page>
                     </notebook>
                 </sheet>
@@ -109,6 +112,7 @@
         <field name="model">orders</field>
         <field name="arch" type="xml">
             <tree string="Orders Tree">
+                <field name="order_sequence" />
                 <field name="name"/>
                 <field invisible="1" name="responsible_id"/>
                 <field name="description"/>
@@ -122,6 +126,7 @@
         <field name="arch" type="xml">
             <search>
                 <field name="name"/>
+                 <field name="order_sequence" />
                 <field name="description"/>
                 <field name="responsible_id"/>
                 <filter name="my_orders" string="My orders"
@@ -129,6 +134,7 @@
                 <group string="Group By">
                     <filter name="by_responsible" string="Responsible"
                             context="{'group_by': 'responsible_id'}"/>
+
                 </group>
             </search>
         </field>

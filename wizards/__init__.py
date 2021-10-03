@@ -4,3 +4,4 @@
 
 from . import tms_wizard_invoice
 from . import tms_wizard_payment
+from . import send_email_wizard
